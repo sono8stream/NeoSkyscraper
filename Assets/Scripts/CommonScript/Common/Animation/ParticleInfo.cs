@@ -5,23 +5,41 @@ using UnityEngine;
 [System.Serializable]
 public class ParticleInfo
 {
-    public Vector2 moveVector;
+    public float moveLength;
     public float lengthRandRatio;
-    public float refractionRadian;
-    public float refractionRandRatio;
-    public float refractionProbability;
+    public float defaultRadian;
+    public float defaultRadianRatio;
+
     public float moveSpeed;
     public float speedRandRatio;
 
-    public ParticleInfo(Vector2 vector, float lengthRndRatio, float refractionRad,
-        float refractionRndRatio, float refractionProb,float speed,float speedRndRatio)
+
+    public float refractionRadian;
+    public float refractionRandRatio;
+    public float refractionProbability;
+    public bool canRefractFirst;
+    public bool canUpdateRad;
+
+
+    public ParticleInfo(float length, float lengthRndRatio,
+        float defaultRad,float defaultRadRatio,
+        float speed, float speedRndRatio,
+        float refractionRad, float refractionRndRatio, float refractionProb,
+        bool firstRefract, bool radUpdatable)
     {
-        moveVector = vector;
+        moveLength = length;
         lengthRandRatio = lengthRndRatio;
+        defaultRadian = defaultRad;
+        defaultRadianRatio = defaultRadRatio;
+
+        moveSpeed = speed;
+        speedRandRatio = speedRndRatio;
+
         refractionRadian = refractionRad;
         refractionRandRatio = refractionRndRatio;
         refractionProbability = refractionProb;
-        moveSpeed = speed;
-        speedRandRatio = speedRndRatio;
+
+        canRefractFirst = firstRefract;
+        canUpdateRad = radUpdatable;
     }
 }
