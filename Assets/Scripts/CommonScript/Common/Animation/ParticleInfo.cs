@@ -5,38 +5,43 @@ using UnityEngine;
 [System.Serializable]
 public class ParticleInfo
 {
+    public float durationSec;
+
     public float moveLength;
     public float lengthRandRatio;
-    public float defaultRadian;
-    public float defaultRadianRatio;
+    public float defaultAngle;
+    public float defaultAngleAmplitude;
 
     public float moveSpeed;
     public float speedRandRatio;
+    public EasingID easingID;
 
-
-    public float refractionRadian;
-    public float refractionRandRatio;
+    public float refractionAngle;
+    public float refractionAngleAmplitude;
     public float refractionProbability;
     public bool canRefractFirst;
     public bool canUpdateRad;
 
 
-    public ParticleInfo(float length, float lengthRndRatio,
-        float defaultRad,float defaultRadRatio,
-        float speed, float speedRndRatio,
-        float refractionRad, float refractionRndRatio, float refractionProb,
+    public ParticleInfo(float duration,
+        float length, float lengthRndRatio,
+        float defaultAng,float defaultAngleAmp,
+        float speed, float speedRndRatio,EasingID id,
+        float refractionAng, float refractAngleAmp, float refractionProb,
         bool firstRefract, bool radUpdatable)
     {
+        durationSec = duration;
         moveLength = length;
         lengthRandRatio = lengthRndRatio;
-        defaultRadian = defaultRad;
-        defaultRadianRatio = defaultRadRatio;
+        defaultAngle = defaultAng;
+        defaultAngleAmplitude = defaultAngleAmp;
 
         moveSpeed = speed;
         speedRandRatio = speedRndRatio;
+        easingID = id;
 
-        refractionRadian = refractionRad;
-        refractionRandRatio = refractionRndRatio;
+        refractionAngle = refractionAng;
+        refractionAngleAmplitude = refractAngleAmp;
         refractionProbability = refractionProb;
 
         canRefractFirst = firstRefract;
