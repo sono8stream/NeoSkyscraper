@@ -4,12 +4,12 @@ using UnityEngine;
 
 public class TimeCounter
 {
+    public bool Enabled { get; private set; }
     public float Limit { get; private set; }
     public float Now { get {
-            return enabled ? Time.fixedTime - startTime : stopTime - startTime;
+            return Enabled ? Time.fixedTime - startTime : stopTime - startTime;
         } }
 
-    bool enabled;
     float startTime;
     float stopTime;
 
@@ -20,10 +20,10 @@ public class TimeCounter
 
     public bool OnLimit()
     {
-        if (!enabled) return false;
+        if (!Enabled) return false;
         if (Now >= Limit)
         {
-            enabled = false;
+            Enabled = false;
             return true;
         }
         return false;
@@ -33,20 +33,20 @@ public class TimeCounter
     {
         Limit = newLim == -1 ? Limit : newLim;
         startTime = Time.fixedTime;
-        enabled = true;
+        Enabled = true;
     }
 
     public void Pause()
     {
-        if (!enabled) return;
-        enabled = false;
+        if (!Enabled) return;
+        Enabled = false;
         stopTime = Time.fixedTime;
     }
 
     public void Restart()
     {
-        if (enabled) return;
+        if (Enabled) return;
         startTime += Time.fixedTime - stopTime;//停止時間だけ進める
-        enabled = true;
+        Enabled = true;
     }
 }

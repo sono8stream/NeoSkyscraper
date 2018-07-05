@@ -8,83 +8,123 @@ using UnityEngine;
 /// </summary>
 public class NeoParticle
 {
-    Transform targetTransform;
-    ParticleInfo particleInfo;
+    public Transform target { get; private set; }
+    ParticleInfo info;
 
     Counter moveCounter;
-    Vector2 moveVelocity;
-    float angleRad;
+    Vector2 moveVector;
+    Vector2 basePos;
+    NeoShot shot;
+    List<NeoShot> shots;
+    float angle;
+    TimeCounter lifeTimer;
 
-    public NeoParticle(Transform transform,ParticleInfo info)
+    public NeoParticle(Transform target, ParticleInfo info)
     {
-        targetTransform = transform;
-        particleInfo = info;
+        this.target = target;
+        this.info = info;
 
-        if (particleInfo.canRefractFirst)
+        float angle = RandDegree(info.defaultAngle, info.defaultAngleAmplitude);
+        target.localEulerAngles = Vector3.forward * angle;
+        if (info.canRefractFirst)
         {
             Refract();
         }
-        else
-        {
-            angleRad = RandValue(particleInfo.defaultRadian, particleInfo.defaultRadianRatio);
-        }
-        InitializeMovement();
+
+        moveCounter = new Counter(1, true);
+        shots = new List<NeoShot>();
+        lifeTimer = new TimeCounter(info.durationSec);
+        lifeTimer.Start();
     }
 
-    public void Move()
+    public bool Move(NeoParticleProcessor processor)
     {
-        targetTransform.localPosition += (Vector3)moveVelocity;
+        if (lifeTimer.OnLimit())
+        {
+            processor.AddRemainShots(shots);
+            for (int i = 0; i < shots.Count; i++)
+            {
+                shots[i].Period();
+            }
+            return false;
+        }
 
         if (moveCounter.Count())
         {
-            CheckRefraction();
+            Refract();
             InitializeMovement();
+            if (shot != null)
+            {
+                shot.Period();
+            }
+            shot = processor.GenerateShot(target);
+            shots.Add(shot);
         }
+
+        var newShots = new List<NeoShot>();
+        for(int i = 0; i < shots.Count; i++)
+        {
+            if (shots[i].Ray(target.localPosition))
+            {
+                newShots.Add(shots[i]);
+            }
+            else
+            {
+                processor.PoolShot(shots[i]);
+            }
+        }
+        shots = newShots;
+
+        float rate = processor.Easing.Easing(moveCounter.Limit, moveCounter.Now, info.easingID);
+        target.localPosition = basePos + moveVector * rate;
+
+        return true;
     }
 
     void InitializeMovement()
     {
-        float length = RandValue(particleInfo.moveLength, particleInfo.lengthRandRatio);
-        var vector = new Vector2(Mathf.Cos(angleRad), Mathf.Sin(angleRad)) * length;
+        float length = RandValue(info.moveLength, info.lengthRandRatio);
+        angle = target.localEulerAngles.z * Mathf.Deg2Rad;
+        moveVector = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * length;
 
-        float speed = RandValue(particleInfo.moveSpeed, particleInfo.speedRandRatio);
+        float speed = RandValue(info.moveSpeed, info.speedRandRatio);
         moveCounter = new Counter((int)Mathf.Abs(length / speed));
-        moveVelocity = vector / moveCounter.Limit;
-    }
-
-    void CheckRefraction()
-    {
-        float prob = Random.value;
-        if (prob < particleInfo.refractionProbability)
-        {
-            Refract();
-        }
+        basePos = target.localPosition;
     }
 
     void Refract()
     {
-        float deltaRadian 
-            = RandValue(particleInfo.refractionRadian, particleInfo.refractionRandRatio);
-
-        if (particleInfo.canUpdateRad)
+        float prob = Random.value;
+        float deltaAngle;
+        if (prob < info.refractionProbability)
         {
-            angleRad += deltaRadian;
+            deltaAngle = RandDegree(info.refractionAngle,
+                info.refractionAngleAmplitude);
         }
         else
         {
-            angleRad = particleInfo.defaultRadian + deltaRadian;
+            deltaAngle = 0;
+        }
+
+        if (info.canUpdateRad)
+        {
+            target.localEulerAngles += Vector3.forward * deltaAngle;
+        }
+        else
+        {
+            target.localEulerAngles = Vector3.forward * (deltaAngle + info.defaultAngle);
         }
     }
-
-    /*Vector2 RandVector(Vector2 baseVector,float randRatio)
-    {
-        float rate = Random.Range(-randRatio, randRatio);
-        return baseVector * rate;
-    }*/
 
     float RandValue(float baseValue, float randRatio)
     {
         float amplitude = baseValue * Random.Range(-randRatio, randRatio);
         return baseValue + amplitude;
+    }
+
+    float RandDegree(float baseAngle, float amplitude)
+    {
+        float amp = Random.Range(-amplitude, amplitude);
+        return (baseAngle + amp);
     }
 }
